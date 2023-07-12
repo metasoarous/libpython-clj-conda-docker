@@ -33,10 +33,16 @@ RUN conda install -n pyclj numpy
 ## To install pip packages into the pyclj environment do
 #RUN conda run -n pyclj python3 -mpip install trimap
 
+# This makes it so that all further `RUN` commands are executed using the conda environment
 SHELL ["conda", "run", "-n", "pyclj", "/bin/bash", "-c"]
-#RUN PYTHON_LD_PATH=$(python3-config --prefix)/lib
-ENV LD_LIBRARY_PATH "/usr/local/lib:$LD_LIBRARY_PATH"
 
+# Would be great to be able to do this, but doesn't work properly, so hardcoding the path below
+#RUN PYTHON_LD_PATH=$(python3-config --prefix)/lib
+ENV LD_LIBRARY_PATH "/usr/local/envs/pyclj:/usr/local/lib:$LD_LIBRARY_PATH"
+
+
+# App setup
+# =========
 
 # Everything after this will get rerun even if the commands haven't changed, since data could change
 WORKDIR /app
@@ -49,5 +55,6 @@ EXPOSE 3851
 
 COPY . .
 
-CMD ["clojure", "-M:cider-nrepl"]
+# This is key; the `SHELL` call below does not 
+CMD ["conda", "run", "-n", "pyclj", "clojure", "-M:cider-nrepl"]
 
